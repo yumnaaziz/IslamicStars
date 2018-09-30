@@ -285,7 +285,7 @@ class Poly
       return;
     }
     else
-      fill(0.5);
+      fill(1, 1, 1, 0);
      
     float r = sin(nbrSides*PI*2/8.0);
     float g = sin(nbrSides*PI*2/8.0+2);
