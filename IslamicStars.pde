@@ -1,3 +1,11 @@
+// open-CV
+//import gab.opencv.*;
+//import processing.video.*;
+//import java.awt.*;
+
+//Capture video;
+//OpenCV opencv;
+
 // do some stuff
  
 // Convert pattern to stars, using something like the Hankin method.
@@ -38,7 +46,7 @@ float frequency = 0.5;
 
 void setup()
 {
-  size(600,600);
+  size(2160,2160);
   colorMode(RGB, 1);
   smooth();
   strokeWeight(2);
@@ -46,6 +54,7 @@ void setup()
   
   polys = new ArrayList<Poly>();
   ReadFile("altair1.txt");
+ frameRate(120);
 }
  
 void draw()
@@ -53,23 +62,25 @@ void draw()
  
   calcWaveOne();  
   calcWaveTwo();
-    angStar = (.001 + (float) (x*50)/width*PI);
-    edgeDist = (float) (y2*35)/height;
-    
-    println("x: " + x + "y: " + y);
-    println("x2: " + x2 + "y2: " + y2);
+  angStar = .001 + (float) (x*155)/width*PI;
+  edgeDist = (float) (y2*140)/height;
+  
+  println("x: " + x + "y: " + y);
+  println("x2: " + x2 + "y2: " + y2);
  
 
-    //println("angstar = " + angStar  + " edgeDist = " + edgeDist);
+  //println("angstar = " + angStar  + " edgeDist = " + edgeDist);
 
-    // println("angstar = " + angStar  + " lm = " + lm);
-     // println("ratio = " + ratio);
+  // println("angstar = " + angStar  + " lm = " + lm);
+   // println("ratio = " + ratio);
 //  }
   background(0);
   for (int i = 0; i < polys.size(); ++i) {
     Poly poly = polys.get(i);
     poly.doDraw();
   }
+  
+  saveFrame("recorded/ren_####.png");
 }
 
 
