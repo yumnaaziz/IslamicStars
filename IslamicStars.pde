@@ -39,17 +39,13 @@ int i2 = 360;
 boolean upperlimitreached2 = true;
 boolean lowerlimitreached2 = false;
 
-float frequency = 0.4; // from 0.5 to 2
+float frequency = 0; // from 0 to 2.5
 float increment = 0.1;
 
 int time = 0;
-int timetillSpeedIncrease = 10;
+int timetillSpeedIncrease = 8;
 float prevFace_x, prevFace_y;
 
-// store the face x and y in each frame. If the difference between current and previous x and y is
-// greater than 2 then face has moved, and change time to 0, and frequency to 0.5.
-// if not, then check is time is > than timetillSpeedincrease, then check if fre is less than 2,
-//change the fre by increment/ 
 
 void setup()
 {
@@ -87,7 +83,7 @@ void draw()
     " " + ( prevFace_y - faces[0].y));
     
     // staying still
-    if(abs(prevFace_x - faces[0].x) < 3 && abs(prevFace_y - faces[0].y) < 3)
+    if(abs(prevFace_x - faces[0].x) <= 3 && abs(prevFace_y - faces[0].y) <= 3)
     {
       // check time 
       if(time > timetillSpeedIncrease)
@@ -101,7 +97,7 @@ void draw()
       }
     } else 
     {
-      frequency = 0.4;
+      frequency = 0;
     }
     
     prevFace_x = faces[0].x;
