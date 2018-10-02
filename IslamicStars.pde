@@ -41,11 +41,15 @@ boolean lowerlimitreached2 = false;
 
 float frequency = 0; // from 0 to 2.5
 float increment = 0.1;
+float speed = 10.0; //higher the speed, the slower the animation
 
 int time = 0;
 int timetillSpeedIncrease = 8;
 float prevFace_x, prevFace_y;
 
+float idletime;
+long timeToWait = 35;// in miliseconds
+long lastTime;
 
 void setup()
 {
@@ -65,18 +69,23 @@ void setup()
 
   video.start();
   
-  frameRate(500);
+  // time stuff
+  lastTime = millis();
+  
+  frameRate(60);
 }
  
 void draw()
 {
-
+  if ( millis() - lastTime > timeToWait) 
+  {
    // Face tracking
   opencv.loadImage(video);
 
   //image(video, 0, 0 );
   Rectangle[] faces = opencv.detect();
   println(" Faces: " + faces.length);
+  
  if(faces.length > 0)
  {
     println("how much the head has moved: " + (prevFace_x - faces[0].x) + 
@@ -88,7 +97,7 @@ void draw()
       // check time 
       if(time > timetillSpeedIncrease)
       {
-        if(frequency < 2.5)
+        if(frequency < 2.3)
         {
           frequency += increment;
         }
@@ -126,7 +135,9 @@ void draw()
     poly.doDraw();
   }
   time +=1;
+  lastTime = millis();
   println("Time: " + time);
+  }
 }
 
 void captureEvent(Capture c) {
@@ -139,7 +150,7 @@ void calcWaveOne()
 {
   x = radians(i);
   y = sin(x);
-  println("x: " + x + "y: " + y);
+  //println("x: " + x + "y: " + y);
   prev_x = x;
   prev_y = y;
   if(upperlimitreached == false && lowerlimitreached == true)
@@ -167,8 +178,8 @@ void calcWaveOne()
 void calcWaveTwo()
 {
   x2 = radians(i2);
-  y2 = (sin(x2) +1)*2;
-  println("x2: " + x2 + "y2: " + y2);
+  y2 = (sin(x2)+1)*2;
+  //println("x2: " + x2 + "y2: " + y2);
   prev_x2 = x2;
   prev_y2 = y2;
   if(upperlimitreached2 == false && lowerlimitreached2 == true)
@@ -399,7 +410,7 @@ class Poly
        if (ip == null)
          continue;
       line(tx(mx1),ty(my1), tx(ip.x), ty(ip.y));
-       line(tx(mx2),ty(my2), tx(ip.x), ty(ip.y));
+      line(tx(mx2),ty(my2), tx(ip.x), ty(ip.y));
        // Find point where these lines intersect, and draw line from mx1,my1 ix,iy   and mx2,my2,ix,iy
     }
   }
