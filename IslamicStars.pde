@@ -38,7 +38,10 @@ float prev_x2 = 0, prev_y2 = 50, x2, y2;
 int i2 = 360;
 boolean upperlimitreached2 = true;
 boolean lowerlimitreached2 = false;
-float frequency = 0.5;
+float frequency = 0.5; // from 0.5 to 2
+
+
+int time = 0;
 
 
 
@@ -60,7 +63,7 @@ void setup()
 
   video.start();
   
-  frameRate(120);
+  frameRate(500);
 }
  
 void draw()
@@ -69,26 +72,21 @@ void draw()
    // Face tracking
   opencv.loadImage(video);
 
-  image(video, 0, 0 );
-
-  noFill();
-  stroke(0, 255, 0);
-  strokeWeight(3);
+  //image(video, 0, 0 );
   Rectangle[] faces = opencv.detect();
   println(" Faces: " + faces.length);
 
-  for (int i = 0; i < faces.length; i++) {
-    println(faces[i].x + "," + faces[i].y);
-    rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
-  }
-  
+  //for (int i = 0; i < faces.length; i++) {
+  //  println(faces[i].x + "," + faces[i].y);
+  //  rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+  //}
   
   // Calculate the sine wave
   calcWaveOne();  
   calcWaveTwo();
   
-  angStar = (.001 + (float) (x*55)/width*PI);
-  edgeDist = (float) (y2*40)/height;
+  angStar = (.001 + (float) (x*55)/width*PI)*frequency;
+  edgeDist = (float) (y2*40)/height * frequency;
     
     println("x: " + x + "y: " + y);
     println("x2: " + x2 + "y2: " + y2);
