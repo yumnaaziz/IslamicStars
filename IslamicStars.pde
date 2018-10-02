@@ -1,4 +1,4 @@
-// face tracking
+//// face tracking
 import gab.opencv.*;
 import processing.video.*;
 import java.awt.*;
@@ -54,12 +54,11 @@ void setup()
   ReadFile("altair1.txt");
   
   // Video stuff
-  video = new Capture(this, width/2, height/2);
-  opencv = new OpenCV(this, width/2, height/2);
+  video = new Capture(this, 640/2, 480/2);
+  opencv = new OpenCV(this, 640/2, 480/2);
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);  
 
   video.start();
-  
   
   frameRate(120);
 }
@@ -67,12 +66,23 @@ void setup()
 void draw()
 {
 
-      // Face tracking
+   // Face tracking
   opencv.loadImage(video);
 
   image(video, 0, 0 );
+
+  noFill();
+  stroke(0, 255, 0);
+  strokeWeight(3);
   Rectangle[] faces = opencv.detect();
   println(" Faces: " + faces.length);
+
+  for (int i = 0; i < faces.length; i++) {
+    println(faces[i].x + "," + faces[i].y);
+    rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+  }
+  
+  
   // Calculate the sine wave
   calcWaveOne();  
   calcWaveTwo();
