@@ -38,12 +38,18 @@ float prev_x2 = 0, prev_y2 = 50, x2, y2;
 int i2 = 360;
 boolean upperlimitreached2 = true;
 boolean lowerlimitreached2 = false;
-float frequency = 0.5; // from 0.5 to 2
 
+float frequency = 0.4; // from 0.5 to 2
+float increment = 0.1;
 
 int time = 0;
+int timetillSpeedIncrease = 10;
+float prevFace_x, prevFace_y;
 
-
+// store the face x and y in each frame. If the difference between current and previous x and y is
+// greater than 2 then face has moved, and change time to 0, and frequency to 0.5.
+// if not, then check is time is > than timetillSpeedincrease, then check if fre is less than 2,
+//change the fre by increment/ 
 
 void setup()
 {
@@ -75,12 +81,33 @@ void draw()
   //image(video, 0, 0 );
   Rectangle[] faces = opencv.detect();
   println(" Faces: " + faces.length);
-
-  //for (int i = 0; i < faces.length; i++) {
-  //  println(faces[i].x + "," + faces[i].y);
-  //  rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
-  //}
-  
+ if(faces.length > 0)
+ {
+    println("how much the head has moved: " + (prevFace_x - faces[0].x) + 
+    " " + ( prevFace_y - faces[0].y));
+    
+    // staying still
+    if(abs(prevFace_x - faces[0].x) < 3 && abs(prevFace_y - faces[0].y) < 3)
+    {
+      // check time 
+      if(time > timetillSpeedIncrease)
+      {
+        if(frequency < 2.5)
+        {
+          frequency += increment;
+        }
+        
+        time = 0;
+      }
+    } else 
+    {
+      frequency = 0.4;
+    }
+    
+    prevFace_x = faces[0].x;
+    prevFace_y = faces[0].y;
+ }
+  println("Frequency: " + frequency);
   // Calculate the sine wave
   calcWaveOne();  
   calcWaveTwo();
@@ -88,8 +115,8 @@ void draw()
   angStar = (.001 + (float) (x*55)/width*PI)*frequency;
   edgeDist = (float) (y2*40)/height * frequency;
     
-    println("x: " + x + "y: " + y);
-    println("x2: " + x2 + "y2: " + y2);
+    //println("x: " + x + "y: " + y);
+    //println("x2: " + x2 + "y2: " + y2);
  
 
     //println("angstar = " + angStar  + " edgeDist = " + edgeDist);
@@ -102,6 +129,8 @@ void draw()
     Poly poly = polys.get(i);
     poly.doDraw();
   }
+  time +=1;
+  println("Time: " + time);
 }
 
 void captureEvent(Capture c) {
