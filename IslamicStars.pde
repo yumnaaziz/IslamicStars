@@ -1,3 +1,12 @@
+// face tracking
+import gab.opencv.*;
+import processing.video.*;
+import java.awt.*;
+
+
+Capture video;
+OpenCV opencv;
+
 // do some stuff
  
 // Convert pattern to stars, using something like the Hankin method.
@@ -20,14 +29,11 @@ float starEdge = 1000;
 
 
 // sine and cos
-float a = 0.0;
-float inc = TWO_PI/100.0;
 float prev_x = 0, prev_y = 50, x, y;
 int i = 0;
 boolean upperlimitreached = false;
 boolean lowerlimitreached = true;
 
-float inc2 = TWO_PI/100.0;
 float prev_x2 = 0, prev_y2 = 50, x2, y2;
 int i2 = 360;
 boolean upperlimitreached2 = true;
@@ -46,15 +52,33 @@ void setup()
   
   polys = new ArrayList<Poly>();
   ReadFile("altair1.txt");
+  
+  // Video stuff
+  video = new Capture(this, width/2, height/2);
+  opencv = new OpenCV(this, width/2, height/2);
+  opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);  
+
+  video.start();
+  
+  
+  frameRate(120);
 }
  
 void draw()
 {
- 
+
+      // Face tracking
+  opencv.loadImage(video);
+
+  image(video, 0, 0 );
+  Rectangle[] faces = opencv.detect();
+  println(" Faces: " + faces.length);
+  // Calculate the sine wave
   calcWaveOne();  
   calcWaveTwo();
-    angStar = (.001 + (float) (x*50)/width*PI);
-    edgeDist = (float) (y2*35)/height;
+  
+  angStar = (.001 + (float) (x*55)/width*PI);
+  edgeDist = (float) (y2*40)/height;
     
     println("x: " + x + "y: " + y);
     println("x2: " + x2 + "y2: " + y2);
@@ -72,6 +96,10 @@ void draw()
   }
 }
 
+void captureEvent(Capture c) {
+  c.read();
+}
+
 
 
 void calcWaveOne()
@@ -81,7 +109,6 @@ void calcWaveOne()
   println("x: " + x + "y: " + y);
   prev_x = x;
   prev_y = y;
-  a = a + inc;  
   if(upperlimitreached == false && lowerlimitreached == true)
   {
     i+=5;
@@ -111,7 +138,6 @@ void calcWaveTwo()
   println("x2: " + x2 + "y2: " + y2);
   prev_x2 = x2;
   prev_y2 = y2;
-  a = a + inc;  
   if(upperlimitreached2 == false && lowerlimitreached2 == true)
   {
     i2+=1;
