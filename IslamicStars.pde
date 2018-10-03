@@ -1,3 +1,5 @@
+import codeanticode.syphon.*;
+
 //// face tracking
 import gab.opencv.*;
 import processing.video.*;
@@ -51,9 +53,13 @@ float idletime;
 long timeToWait = 35;// in miliseconds
 long lastTime;
 
+SyphonServer server;
+
 void setup()
 {
-  size(600,600);
+  
+  size(600,600, P3D);
+  server = new SyphonServer(this, "Processing Syphon");
   colorMode(RGB, 1);
   smooth();
   strokeWeight(2);
@@ -71,6 +77,8 @@ void setup()
   
   // time stuff
   lastTime = millis();
+  
+  
   
   frameRate(60);
 }
@@ -137,6 +145,8 @@ void draw()
   time +=1;
   lastTime = millis();
   println("Time: " + time);
+  
+  server.sendScreen(); 
   }
 }
 
@@ -203,22 +213,6 @@ void calcWaveTwo()
   
  
 }
-
-//void calcWaveOne()
-//{
-//  if(i == 100)
-//  {
-//    i = 0;
-//  }
-//  x = i;
-//  y = 50 + sin(a) * 40.0;
-//  line(prev_x, prev_y, x, y);
-//  prev_x = x;
-//  prev_y = y;
-//  a = a + inc;
-//  i+=4;
-//}
-
 
 class MyFloat {
   float v;
@@ -376,7 +370,7 @@ class Poly
     // println(outStr);
  
     stroke(1);
- 
+
     float cx = 0;
     float cy = 0;
     for (int i = 0; i < nbrSides; ++i) {
