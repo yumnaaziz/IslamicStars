@@ -50,14 +50,25 @@ int timetillSpeedIncrease = 8;
 float prevFace_x, prevFace_y;
 
 float idletime;
-long timeToWait = 35;// in miliseconds
+long timeToWait = 120;// in miliseconds
 long lastTime;
+
+//Particles
+float alpha = 255;
+Particle particle;
+
+// Trail/Delay
+ArrayList<Line> history1 = new ArrayList<Line>(); 
+ArrayList<Line> history2 = new ArrayList<Line>();  
+
+// FadeAnimation
+float mColor = 0.1;
+boolean changeDirection = false;
 
 SyphonServer server;
 
 void setup()
 {
-  
   size(600,600, P3D);
   server = new SyphonServer(this, "Processing Syphon");
   colorMode(RGB, 1);
@@ -77,9 +88,8 @@ void setup()
   
   // time stuff
   lastTime = millis();
-  
-  
-  
+ 
+  particle = new Particle(new PVector(width/2, height/2), 5);
   frameRate(60);
 }
  
@@ -87,7 +97,118 @@ void draw()
 {
   if ( millis() - lastTime > timeToWait) 
   {
-   // Face tracking
+   FaceTracking();
+  // Calculate the sine wave
+  calcWaveOne();  
+  calcWaveTwo();
+  
+  angStar = (.001 + (float) (x*55)/width*PI)*frequency;
+  edgeDist = (float) (y2*40)/height * frequency;
+  background(0);
+  
+  FadeAnimation();
+  
+  DrawAnimation(); //<>//
+  
+    //LineTrail();
+    //UpdateAlpha();
+  //<>//
+   //  for (int i = 0; i < polys.size(); ++i) 
+   //{
+   //   Poly poly = polys.get(i);
+   //   poly.saved = false;
+   //}
+  //<>//
+  UpdateTime();
+  server.sendScreen(); 
+  println("FrameRate: " + frameRate);
+  }
+}
+
+void DrawAnimation()
+{
+   for (int i = 0; i < polys.size(); ++i) 
+  {
+    //FadeAnimation();
+    Poly poly = polys.get(i);
+    poly.doDraw(i);
+  }
+}
+void FadeAnimation()
+{
+  if(millis()-lastTime > timeToWait)
+    {
+      if(changeDirection == false)
+      {
+        mColor+=0.1;
+        if(mColor > 1)
+        {
+          changeDirection = true;
+        }
+      }
+      if(changeDirection)
+      {
+        mColor-=0.1;
+        if(mColor < 0.2)
+        {
+          changeDirection = false;
+        }
+      }
+      
+      println("mColor: " + mColor);
+    }
+
+}
+
+
+void UpdateAlpha()
+{
+  if(alpha < 0)
+  {
+    alpha = 255;
+  }
+  else
+  {
+    alpha--;
+  }
+  println("Alpha: " + alpha);
+}
+
+void LineTrail()
+{
+  if(frequency != 0)
+  {
+    if(lastTime > 100)
+    {
+    for(int j = 0; j <history1.size(); j++)
+      {
+        //println("size of his1: " + poly.history1.size());
+        Line line = history1.get(j);
+        stroke(0.5, j*2);
+        line(line.getX1(), line.getY1(), line.getX2(),line.getY2());
+      }
+      
+       for(int j = 0; j <history2.size(); j++)
+      {
+        //println("size of his2: " + poly.history1.size());
+        Line line = history2.get(j);
+        stroke(0.5, j*2);
+        line(line.getX1(), line.getY1(), line.getX2(),line.getY2());
+      }
+    }
+      
+  }
+}
+void UpdateTime()
+{
+  time +=1;
+  lastTime = millis();
+  println("Time: " + time);
+}
+
+void FaceTracking()
+{
+  // Face tracking
   opencv.loadImage(video);
 
   //image(video, 0, 0 );
@@ -121,40 +242,11 @@ void draw()
     prevFace_y = faces[0].y;
  }
   println("Frequency: " + frequency);
-  // Calculate the sine wave
-  calcWaveOne();  
-  calcWaveTwo();
-  
-  angStar = (.001 + (float) (x*55)/width*PI)*frequency;
-  edgeDist = (float) (y2*40)/height * frequency;
-    
-    //println("x: " + x + "y: " + y);
-    //println("x2: " + x2 + "y2: " + y2);
- 
-
-    //println("angstar = " + angStar  + " edgeDist = " + edgeDist);
-
-    // println("angstar = " + angStar  + " lm = " + lm);
-     // println("ratio = " + ratio);
-//  }
-  background(0);
-  for (int i = 0; i < polys.size(); ++i) {
-    Poly poly = polys.get(i);
-    poly.doDraw();
-  }
-  time +=1;
-  lastTime = millis();
-  println("Time: " + time);
-  
-  server.sendScreen(); 
-  }
 }
 
 void captureEvent(Capture c) {
   c.read();
 }
-
-
 
 void calcWaveOne()
 {
@@ -213,16 +305,6 @@ void calcWaveTwo()
   
  
 }
-
-class MyFloat {
-  float v;
-  MyFloat(float v) {
-    this.v = v;
-  }
-  float floatValue() {
-    return v;
-  }
-}
  
 void ReadFile(String vFileName)
 {
@@ -263,22 +345,7 @@ void ReadFile(String vFileName)
  
 }
  
- 
-class Point
-{
-  float x,y;
-  Point(float x, float y)
-  {
-    this.x = x;
-    this.y = y;
-    if (x < minx)  minx = x;
-    if (x > maxx)  maxx = x;
-    if (y < miny)  miny = y;
-    if (y > maxy)  maxy = y;
-  } 
-}
- 
-// this crashes in certain situations...
+ // this crashes in certain situations...
 Point intersection(float x1,float y1,float x2,float y2,
    float x3, float y3, float x4,float y4 )
    {
@@ -323,109 +390,7 @@ Point intersection(float x1,float y1,float x2,float y2,
       println("e");
       return null;
     } 
-}
- 
-class Poly
-{
-  ArrayList<Point>  pts;
-  int nbrSides;
-   
-  Poly(int nbrSides)
-  {
-    this.nbrSides = nbrSides;
-    this.pts = new ArrayList<Point>();
-  }
-   
-  void AddDot(float x, float y)
-  {
-    pts.add( new Point(x,y) );
-  }
-   
-  void doDraw()
-  {
-    if (outsideBorder())
-    {
-      fill(.5);
-      return;
-    }
-    else
-      fill(1, 1, 1, 0);
-     
-    float r = sin(nbrSides*PI*2/8.0);
-    float g = sin(nbrSides*PI*2/8.0+2);
-    float b = sin(nbrSides*PI*2/8.0+4);
-    // fill  (.9+r*.1, .9+g*.1, .9+b*.1);
-     noStroke();
- 
-    String outStr = nbrSides +",";
-    beginShape();
-     
-    for (int i = 0; i <= nbrSides; ++i) {
-      Point pt = (Point) pts.get(i % nbrSides);
-      vertex( tx(pt.x), ty(pt.y) );
-      if (i < nbrSides)
-        outStr += pt.x + "," + pt.y + ",";
-    }
-    endShape();
-    // println(outStr);
- 
-    stroke(1);
-
-    float cx = 0;
-    float cy = 0;
-    for (int i = 0; i < nbrSides; ++i) {
-      Point pt = (Point) pts.get(i % nbrSides);
-      cx += tx(pt.x);
-      cy += ty(pt.y);
-    }
-    cx /= nbrSides;
-    cy /= nbrSides;
-    for (int i = 0; i < nbrSides; ++i) {
-       Point p1 = (Point) pts.get(i % nbrSides);
-       Point p2 = (Point) pts.get((i+1) % nbrSides);
-       Point p3 = (Point) pts.get((i+2) % nbrSides);
-       // Draw segment that starts at midpoint of p2,p1 and goes at angle p2,p1 + (PI-angStar)/2
-       // to the point where it intersects segment that starts at midpoint of p2,p3 and goes at angle p2,p3-(PI-angStar)/2
-       float mx1 = (p1.x + p2.x)/2;
-       float my1 = (p1.y + p2.y)/2;
-       mx1 += (p1.x - p2.x)*edgeDist;
-       my1 += (p1.y - p2.y)*edgeDist;
-       float mx2 = (p3.x + p2.x)/2;
-       float my2 = (p3.y + p2.y)/2;
-       mx2 += (p3.x - p2.x)*edgeDist;
-       my2 += (p3.y - p2.y)*edgeDist;
-       float ang1 = atan2(p2.y-p1.y,p2.x-p1.x) + (PI-angStar)/2;
-       float ang2 = atan2(p2.y-p3.y,p2.x-p3.x) - (PI-angStar)/2;
-       float ex1 = mx1+cos(ang1)*starEdge;
-       float ey1 = my1+sin(ang1)*starEdge;
-       float ex2 = mx2+cos(ang2)*starEdge;
-       float ey2 = my2+sin(ang2)*starEdge;
-       Point ip = intersection(mx1,my1,ex1,ey1,mx2,my2,ex2,ey2);
-       if (ip == null)
-         continue;
-      line(tx(mx1),ty(my1), tx(ip.x), ty(ip.y));
-      line(tx(mx2),ty(my2), tx(ip.x), ty(ip.y));
-       // Find point where these lines intersect, and draw line from mx1,my1 ix,iy   and mx2,my2,ix,iy
-    }
-  }
- 
-  boolean outsideBorder()
-  {
-    float cx = 0;
-    float cy = 0;
-    for (int i = 0; i < nbrSides; ++i) {
-      Point pt = (Point) pts.get(i % nbrSides);
-      cx += tx(pt.x);
-      cy += ty(pt.y);
-    }
-    cx /= nbrSides;
-    cy /= nbrSides;
-    float dx = cx - width/2;
-    float dy = cy - height/2;
-    return sqrt(dx*dx + dy*dy) > ratio*width/2 ;
-  }
-}
- 
+}  //<>// //<>// //<>// //<>//
 float tx(float x)
 {
   return (x - minx)*dxs + lm;
